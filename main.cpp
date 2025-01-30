@@ -2,6 +2,7 @@
 #include <fstream>
 #include <filesystem>
 #include <vector>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -34,15 +35,54 @@ void splitFile(const std::string& filePath, size_t chunkSize) {
     std::cout << "File split into " << partNumber << " chunks in '" << outputDir << "'.\n";
 }
 
+void joinFiles(const std::string& chunkDir, const std::string& outputFilePath) {
+    std::vector<std::string> chunkFiles;
+    for (const auto& entry : fs::directory_iterator(chunkDir)) {
+        chunkFiles.push_back(entry.path().string());
+    }
+    
+    std::sort(chunkFiles.begin(), chunkFiles.end());
+    
+    std::ofstream outputFile(outputFilePath, std::ios::binary);
+    if (!outputFile) {
+        std::cerr << "Error: Unable to create output file!\n";
+        return;
+    }
+    
+    for (const auto& chunk : chunkFiles) {
+        std::ifstream inputFile(chunk, std::ios::binary);
+        if (!inputFile) {
+            std::cerr << "Error: Unable to open chunk file " << chunk << "\n";
+            return;
+        }
+        outputFile << inputFile.rdbuf();
+    }
+    
+    std::cout << "File successfully reconstructed as '" << outputFilePath << "'.\n";
+}
+
 int main() {
-    std::string filePath;
-    size_t chunkSize;
-
-    std::cout << "Enter file path: ";
-    std::cin >> filePath;
-    std::cout << "Enter chunk size (bytes): ";
-    std::cin >> chunkSize;
-
-    splitFile(filePath, chunkSize);
+    int choice;
+    std::cout << "1. Split File\n2. Join Files\nEnter choice: ";
+    std::cin >> choice;
+    
+    if (choice == 1) {
+        std::string filePath;
+        size_t chunkSize;
+        std::cout << "Enter file path: ";
+        std::cin >> filePath;
+        std::cout << "Enter chunk size (bytes): ";
+        std::cin >> chunkSize;
+        splitFile(filePath, chunkSize);
+    } else if (choice == 2) {
+        std::string chunkDir, outputFilePath;
+        std::cout << "Enter chunk directory: ";
+        std::cin >> chunkDir;
+        std::cout << "Enter output file path: ";
+        std::cin >> outputFilePath;
+        joinFiles(chunkDir, outputFilePath);
+    } else {
+        std::cerr << "Invalid choice!\n";
+    }
     return 0;
 }
