@@ -10,7 +10,7 @@ int main()
     std::cout << "\033[1;33m1. Split & Encrypt File\n2. Decrypt & Join Files\nEnter choice: \033[0m";
     std::cin >> choice;
     std::cin.ignore();
-    std::string password = getHiddenInput("Enter password: ");
+    std::string password = getHiddenInput("Enter password (can be empty): ");
 
     if (choice == 1)
     {
