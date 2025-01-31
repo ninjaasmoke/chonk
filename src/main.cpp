@@ -18,9 +18,9 @@ int main()
         size_t chunkSize;
         std::cout << "\033[1;34mEnter file path: \033[0m";
         std::getline(std::cin, filePath);
-        std::cout << "\033[1;34mEnter chunk size (bytes): \033[0m";
+        std::cout << "\033[1;34mEnter chunk size (Mega bytes): \033[0m";
         std::cin >> chunkSize;
-        splitFile(filePath, chunkSize, password);
+        splitFile(filePath, chunkSize * 1048576, password);
     }
     else if (choice == 2)
     {
