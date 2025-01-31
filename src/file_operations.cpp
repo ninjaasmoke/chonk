@@ -26,6 +26,7 @@ void splitFile(const std::string &filePath, size_t chunkSize, const std::string 
     std::vector<char> buffer(chunkSize);
     size_t partNumber = 0;
     size_t totalBytesProcessed = 0;
+    auto startTime = std::chrono::steady_clock::now();
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     unsigned char key[32], iv[16];
@@ -65,8 +66,14 @@ void splitFile(const std::string &filePath, size_t chunkSize, const std::string 
         totalBytesProcessed += bytesRead;
         partNumber++;
         double progress = (static_cast<double>(totalBytesProcessed) / totalFileSize) * 100.0;
+        auto currentTime = std::chrono::steady_clock::now();
+        std::chrono::duration<double> elapsedSeconds = currentTime - startTime;
+        double projectedTimeRemaining = (elapsedSeconds.count() / progress) * (100.0 - progress);
+
         std::cout << "\r\033[1;32mProgress: " << std::fixed << std::setprecision(2) << progress << "% ("
-                  << totalBytesProcessed << " / " << totalFileSize << " bytes)\033[0m" << std::flush;
+              << totalBytesProcessed << " / " << totalFileSize << " bytes), "
+              << "Elapsed: " << std::fixed << std::setprecision(2) << elapsedSeconds.count() << "s, "
+              << "Remaining: " << std::fixed << std::setprecision(2) << projectedTimeRemaining << "s\033[0m" << std::flush;
     }
 
     EVP_CIPHER_CTX_free(ctx);
@@ -111,6 +118,8 @@ void joinFiles(const std::string &chunkDir, const std::string &outputFilePath, c
 
     size_t chunkNumber = 0;
     const size_t progressUpdateInterval = 5;
+    size_t totalBytesProcessed = 0;
+    auto startTime = std::chrono::steady_clock::now();
 
     for (const auto &chunk : chunkFiles)
     {
@@ -132,13 +141,20 @@ void joinFiles(const std::string &chunkDir, const std::string &outputFilePath, c
         decryptedData.resize(outLen1 + outLen2);
 
         outputFile.write(decryptedData.data(), decryptedData.size());
+        totalBytesProcessed += decryptedData.size();
 
         chunkNumber++;
         if (chunkNumber % progressUpdateInterval == 0 || chunkNumber == chunkFiles.size())
         {
+            auto currentTime = std::chrono::steady_clock::now();
+            std::chrono::duration<double> elapsedSeconds = currentTime - startTime;
             double progress = (static_cast<double>(chunkNumber) / chunkFiles.size()) * 100.0;
+            double projectedTimeRemaining = (elapsedSeconds.count() / progress) * (100.0 - progress);
+
             std::cout << "\r\033[1;32mProgress: " << std::fixed << std::setprecision(2) << progress << "% ("
-                      << chunkNumber << " / " << chunkFiles.size() << " chunks)\033[0m" << std::flush;
+                      << chunkNumber << " / " << chunkFiles.size() << " chunks), "
+                      << "Elapsed: " << std::fixed << std::setprecision(2) << elapsedSeconds.count() << "s, "
+                      << "Remaining: " << std::fixed << std::setprecision(2) << projectedTimeRemaining << "s\033[0m" << std::flush;
         }
     }
 
