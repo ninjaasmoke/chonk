@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(FileSplitter)
+project(Chonk)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -21,7 +21,10 @@ set(SOURCES
 )
 
 # Add executable
-add_executable(file_splitter ${SOURCES})
+add_executable(chonk ${SOURCES})
+
+# Set the output directory for the executable to be one folder up
+set_target_properties(chonk PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/..)
 
 # Link OpenSSL libraries
-target_link_libraries(file_splitter PRIVATE OpenSSL::Crypto OpenSSL::SSL)
+target_link_libraries(chonk PRIVATE OpenSSL::Crypto OpenSSL::SSL)
