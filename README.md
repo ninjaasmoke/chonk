@@ -41,3 +41,14 @@ Enter output file path: s2.mp4
 Progress: 100.00% (29 / 29 chunks), Elapsed: 11.50s, Remaining: 0.00s
 File successfully decrypted and reconstructed as 's2.mp4'.
 ```
+
+## Build from source
+
+```bash
+$ git clone git@github.com:ninjaasmoke/chonk.git
+$ cd chonk
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+```
