@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <iomanip>
 
 void splitFile(const std::string &filePath, size_t chunkSize, const std::string &password)
 {
@@ -14,12 +15,18 @@ void splitFile(const std::string &filePath, size_t chunkSize, const std::string 
         return;
     }
 
+    // Get the total size of the file
+    inputFile.seekg(0, std::ios::end);
+    size_t totalFileSize = inputFile.tellg();
+    inputFile.seekg(0, std::ios::beg);
+
     fs::path inputPath(filePath);
     std::string outputDir = inputPath.stem().string() + "_chunks";
     fs::create_directory(outputDir);
 
     std::vector<char> buffer(chunkSize);
     size_t partNumber = 0;
+    size_t totalBytesProcessed = 0;
 
     while (inputFile)
     {
@@ -40,11 +47,18 @@ void splitFile(const std::string &filePath, size_t chunkSize, const std::string 
         }
 
         outputFile.write((char *)encryptedData.data(), encryptedData.size());
-        std::cout << "\033[1;32mWritten chunk " << partNumber << " (" << bytesRead << " bytes)\033[0m\n";
+        totalBytesProcessed += bytesRead;
         partNumber++;
+
+        // Calculate progress percentage
+        double progress = (static_cast<double>(totalBytesProcessed) / totalFileSize) * 100.0;
+
+        // Display progress in a single line
+        std::cout << "\r\033[1;32mProgress: " << std::fixed << std::setprecision(2) << progress << "% ("
+                  << totalBytesProcessed << " / " << totalFileSize << " bytes)\033[0m" << std::flush;
     }
 
-    std::cout << "\033[1;32mFile split and encrypted into " << partNumber << " chunks in '" << outputDir << "'.\033[0m\n";
+    std::cout << "\n\033[1;32mFile split and encrypted into " << partNumber << " chunks in '" << outputDir << "'.\033[0m\n";
 }
 
 void joinFiles(const std::string &chunkDir, const std::string &outputFilePath, const std::string &password)
@@ -90,7 +104,13 @@ void joinFiles(const std::string &chunkDir, const std::string &outputFilePath, c
         auto decryptedData = decryptChunk({encryptedData.begin(), encryptedData.end()}, password);
         outputFile.write(decryptedData.data(), decryptedData.size());
 
-        std::cout << "\033[1;32mJoined chunk " << chunkNumber << " (" << decryptedData.size() << " bytes)\033[0m\n";
+        // Calculate progress percentage
+        double progress = (static_cast<double>(chunkNumber + 1) / chunkFiles.size()) * 100.0;
+
+        // Display progress in a single line
+        std::cout << "\r\033[1;32mProgress: " << std::fixed << std::setprecision(2) << progress << "% ("
+                  << chunkNumber + 1 << " / " << chunkFiles.size() << " chunks)\033[0m" << std::flush;
+
         chunkNumber++;
     }
 
