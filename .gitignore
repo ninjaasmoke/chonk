@@ -4,6 +4,9 @@
 /CMakeFiles/
 /cmake_install.cmake
 /Makefile
+/node_modules/
+.next/
+.env.local
 
 # Executables
 file_splitter
